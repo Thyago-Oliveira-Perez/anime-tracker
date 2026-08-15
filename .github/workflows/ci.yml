@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up mise (installs the .NET SDK version pinned in .mise.toml)
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('backend/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        working-directory: backend
+        run: dotnet restore
+
+      - name: Build
+        working-directory: backend
+        run: dotnet build --no-restore --configuration Release
+
+      # The main gate of this pipeline: see backend/tests/AnimeTracker.Api.Tests.
+      - name: Test
+        working-directory: backend
+        run: >
+          dotnet test --no-build --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/TestResults/*.trx
+
+  frontend:
+    name: Frontend (Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up mise (installs the Node version pinned in .mise.toml)
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+
+      - name: Cache npm packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      # The main gate of this pipeline: pure-logic unit tests under src/**/*.test.ts.
+      - name: Test
+        working-directory: frontend
+        run: npm run test
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:8080
+
+  # Sanity-checks that both Dockerfiles still produce an image. Runs only after both test
+  # suites pass, since it exists to catch deploy-breaking issues, not to replace the tests.
+  docker-build:
+    name: Docker image build check
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t anime-tracker-backend:ci ./backend
+
+      - name: Build frontend image
+        run: docker build -t anime-tracker-frontend:ci --build-arg VITE_API_URL=http://localhost:8080 ./frontend

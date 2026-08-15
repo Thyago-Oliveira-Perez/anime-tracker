@@ -72,6 +72,20 @@ docker compose up -d --build
 Frontend local dev without Docker: `cd frontend && cp .env.local.example .env.local && npm run dev` (Vite dev server, default port 5173).
 
 Backend tests: `cd backend/tests/AnimeTracker.Api.Tests && dotnet test`.
+Frontend tests: `cd frontend && npm run test`.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push to `master`:
+
+1. **backend** — restore/build/test the .NET solution (`dotnet test`, EF Core InMemory for
+   the service-layer tests, no real DB needed)
+2. **frontend** — `npm ci`, lint, `vitest run`, production build
+3. **docker-build** — builds both Dockerfiles (gated on 1 and 2 passing) as a deploy-readiness
+   check, doesn't push anywhere
+
+Tool versions come from the same `.mise.toml` used locally (via `jdx/mise-action`), so CI runs
+the exact .NET/Node versions you develop against.
 
 ## API overview
 
@@ -99,3 +113,6 @@ with the exact payload shapes the UI sends) since both AniList and Jikan happene
 during development — actual search-driven add-to-list still needs a live check once either
 recovers. Not built yet: anime detail page, stats/dashboard, auth (still intentionally
 single-user/no-login per the original plan).
+
+CI (GitHub Actions, push to `master`) runs backend + frontend unit tests and a Docker build
+check on every commit — see the CI section above.
