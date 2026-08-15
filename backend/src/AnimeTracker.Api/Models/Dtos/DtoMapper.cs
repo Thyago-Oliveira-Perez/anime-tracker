@@ -1,4 +1,3 @@
-using AnimeTracker.Api.Models.AniList;
 using AnimeTracker.Api.Models.Entities;
 
 namespace AnimeTracker.Api.Models.Dtos;
@@ -6,7 +5,8 @@ namespace AnimeTracker.Api.Models.Dtos;
 public static class DtoMapper
 {
     public static AnimeDto ToDto(this AnimeCache anime) => new(
-        anime.AniListId,
+        anime.Provider,
+        anime.ExternalId,
         anime.TitleRomaji,
         anime.TitleEnglish,
         anime.TitleNative,
@@ -15,17 +15,20 @@ public static class DtoMapper
         anime.EpisodesTotal,
         anime.Genres);
 
-    public static AnimeDto ToDto(this AniListMediaDto media) => new(
-        media.Id,
-        media.Title.Romaji ?? media.Title.English ?? media.Title.Native ?? "Untitled",
-        media.Title.English,
-        media.Title.Native,
-        media.CoverImage?.Large,
-        media.Format,
-        media.Episodes,
-        media.Genres ?? [],
-        media.Description,
-        media.AverageScore);
+    /// <summary>Turns a normalized provider search/lookup result into a cache row ready to persist.</summary>
+    public static AnimeCache ToAnimeCache(this AnimeDto dto, TimeProvider timeProvider) => new()
+    {
+        Provider = dto.Provider,
+        ExternalId = dto.ExternalId,
+        TitleRomaji = dto.TitleRomaji,
+        TitleEnglish = dto.TitleEnglish,
+        TitleNative = dto.TitleNative,
+        CoverImageUrl = dto.CoverImageUrl,
+        Format = dto.Format,
+        EpisodesTotal = dto.EpisodesTotal,
+        Genres = dto.Genres,
+        SyncedAt = timeProvider.GetUtcNow(),
+    };
 
     public static WatchEntryDto ToDto(this WatchEntry entry) => new(
         entry.Id,

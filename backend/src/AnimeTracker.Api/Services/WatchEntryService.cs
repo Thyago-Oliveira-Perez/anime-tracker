@@ -1,12 +1,12 @@
 using AnimeTracker.Api.Data;
 using AnimeTracker.Api.Models.Dtos;
 using AnimeTracker.Api.Models.Entities;
-using AnimeTracker.Api.Services.AniList;
+using AnimeTracker.Api.Services.Providers;
 using Microsoft.EntityFrameworkCore;
 
 namespace AnimeTracker.Api.Services;
 
-public class WatchEntryService(AppDbContext db, IAniListClient aniListClient, TimeProvider timeProvider)
+public class WatchEntryService(AppDbContext db, IAnimeProviderRegistry providers, TimeProvider timeProvider)
 {
     public async Task<List<WatchEntry>> ListAsync(
         WatchStatus? status, bool? favorite, CancellationToken cancellationToken = default)
@@ -28,19 +28,23 @@ public class WatchEntryService(AppDbContext db, IAniListClient aniListClient, Ti
 
     /// <summary>
     /// Creates a new watch entry. Also makes sure the referenced anime is cached locally,
-    /// fetching it from AniList on the fly if this is the first time it's ever been added.
+    /// fetching it from its source provider on the fly if this is the first time it's ever
+    /// been added — regardless of which provider is currently active as the search default.
     /// </summary>
-    /// <returns>The created entry, or null if the AniList id doesn't exist.</returns>
+    /// <returns>The created entry, or null if the anime doesn't exist in that provider.</returns>
     public async Task<WatchEntry?> CreateAsync(CreateWatchEntryRequest request, CancellationToken cancellationToken = default)
     {
-        var anime = await EnsureAnimeCachedAsync(request.AniListId, cancellationToken);
+        var anime = await EnsureAnimeCachedAsync(request.Provider, request.ExternalId, cancellationToken);
         if (anime is null)
             return null;
 
         var now = timeProvider.GetUtcNow();
         var entry = new WatchEntry
         {
-            AniListId = anime.AniListId,
+            // Set via navigation, not AnimeCacheId directly: when `anime` was just cached for
+            // the first time its Id is still 0 (unassigned) until SaveChanges — EF Core's
+            // relationship fixup resolves the real FK from this reference at save time.
+            Anime = anime,
             Status = request.Status,
             Rating = request.Rating,
             Review = request.Review,
@@ -58,7 +62,6 @@ public class WatchEntryService(AppDbContext db, IAniListClient aniListClient, Ti
         db.WatchEntries.Add(entry);
         await db.SaveChangesAsync(cancellationToken);
 
-        entry.Anime = anime;
         return entry;
     }
 
@@ -96,17 +99,19 @@ public class WatchEntryService(AppDbContext db, IAniListClient aniListClient, Ti
         return true;
     }
 
-    private async Task<AnimeCache?> EnsureAnimeCachedAsync(int aniListId, CancellationToken cancellationToken)
+    private async Task<AnimeCache?> EnsureAnimeCachedAsync(
+        AnimeProvider provider, string externalId, CancellationToken cancellationToken)
     {
-        var cached = await db.AnimeCaches.FirstOrDefaultAsync(a => a.AniListId == aniListId, cancellationToken);
+        var cached = await db.AnimeCaches
+            .FirstOrDefaultAsync(a => a.Provider == provider && a.ExternalId == externalId, cancellationToken);
         if (cached is not null)
             return cached;
 
-        var media = await aniListClient.GetByIdAsync(aniListId, cancellationToken);
-        if (media is null)
+        var dto = await providers.Get(provider).GetByExternalIdAsync(externalId, cancellationToken);
+        if (dto is null)
             return null;
 
-        var anime = media.ToAnimeCache(timeProvider);
+        var anime = dto.ToAnimeCache(timeProvider);
         db.AnimeCaches.Add(anime);
         return anime;
     }

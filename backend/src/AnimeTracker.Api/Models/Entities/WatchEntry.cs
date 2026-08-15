@@ -8,7 +8,7 @@ public class WatchEntry
 {
     public int Id { get; set; }
 
-    public int AniListId { get; set; }
+    public int AnimeCacheId { get; set; }
     public AnimeCache Anime { get; set; } = null!;
 
     public WatchStatus Status { get; set; } = WatchStatus.Planned;

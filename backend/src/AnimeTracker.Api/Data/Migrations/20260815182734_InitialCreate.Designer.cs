@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AnimeTracker.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260815175711_InitialCreate")]
+    [Migration("20260815182734_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,8 +27,11 @@ namespace AnimeTracker.Api.Data.Migrations
 
             modelBuilder.Entity("AnimeTracker.Api.Models.Entities.AnimeCache", b =>
                 {
-                    b.Property<int>("AniListId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CoverImageUrl")
                         .HasColumnType("text");
@@ -36,12 +39,19 @@ namespace AnimeTracker.Api.Data.Migrations
                     b.Property<int?>("EpisodesTotal")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Format")
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<string[]>("Genres")
                         .IsRequired()
                         .HasColumnType("text[]");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("SyncedAt")
                         .HasColumnType("timestamp with time zone");
@@ -56,9 +66,29 @@ namespace AnimeTracker.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("AniListId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("Provider", "ExternalId")
+                        .IsUnique();
 
                     b.ToTable("AnimeCaches");
+                });
+
+            modelBuilder.Entity("AnimeTracker.Api.Models.Entities.Setting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("AnimeTracker.Api.Models.Entities.Tag", b =>
@@ -89,7 +119,7 @@ namespace AnimeTracker.Api.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AniListId")
+                    b.Property<int>("AnimeCacheId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -124,7 +154,7 @@ namespace AnimeTracker.Api.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AniListId");
+                    b.HasIndex("AnimeCacheId");
 
                     b.HasIndex("Status");
 
@@ -150,7 +180,7 @@ namespace AnimeTracker.Api.Data.Migrations
                 {
                     b.HasOne("AnimeTracker.Api.Models.Entities.AnimeCache", "Anime")
                         .WithMany("WatchEntries")
-                        .HasForeignKey("AniListId")
+                        .HasForeignKey("AnimeCacheId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

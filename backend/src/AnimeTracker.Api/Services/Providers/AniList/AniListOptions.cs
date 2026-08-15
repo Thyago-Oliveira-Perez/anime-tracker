@@ -1,4 +1,4 @@
-namespace AnimeTracker.Api.Services.AniList;
+namespace AnimeTracker.Api.Services.Providers.AniList;
 
 public class AniListOptions
 {

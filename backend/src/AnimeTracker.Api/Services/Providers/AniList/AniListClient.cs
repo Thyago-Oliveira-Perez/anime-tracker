@@ -1,7 +1,9 @@
+using System.Net;
 using System.Net.Http.Json;
 using AnimeTracker.Api.Models.AniList;
+using AnimeTracker.Api.Models.Entities;
 
-namespace AnimeTracker.Api.Services.AniList;
+namespace AnimeTracker.Api.Services.Providers.AniList;
 
 /// <summary>
 /// Thin wrapper around AniList's public GraphQL API (https://anilist.gitbook.io/anilist-apiv2-docs/).
@@ -76,23 +78,19 @@ public class AniListClient(HttpClient httpClient, ILogger<AniListClient> logger)
     {
         using var response = await httpClient.PostAsJsonAsync(string.Empty, request, cancellationToken);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             logger.LogWarning("AniList rate limit hit while querying the GraphQL API.");
-            throw new AniListRateLimitException();
+            throw new AnimeProviderRateLimitException(AnimeProvider.AniList);
         }
 
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             logger.LogError("AniList API returned {StatusCode}: {Body}", response.StatusCode, body);
-            throw new AniListException($"AniList API returned {(int)response.StatusCode}.");
+            throw new AnimeProviderUnavailableException(AnimeProvider.AniList, $"HTTP {(int)response.StatusCode}");
         }
 
         return await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken);
     }
 }
-
-public class AniListException(string message) : Exception(message);
-
-public class AniListRateLimitException() : AniListException("AniList rate limit exceeded, try again shortly.");

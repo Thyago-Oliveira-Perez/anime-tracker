@@ -16,7 +16,10 @@ namespace AnimeTracker.Api.Data.Migrations
                 name: "AnimeCaches",
                 columns: table => new
                 {
-                    AniListId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Provider = table.Column<int>(type: "integer", nullable: false),
+                    ExternalId = table.Column<string>(type: "text", nullable: false),
                     TitleRomaji = table.Column<string>(type: "text", nullable: false),
                     TitleEnglish = table.Column<string>(type: "text", nullable: true),
                     TitleNative = table.Column<string>(type: "text", nullable: true),
@@ -28,7 +31,20 @@ namespace AnimeTracker.Api.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AnimeCaches", x => x.AniListId);
+                    table.PrimaryKey("PK_AnimeCaches", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Settings",
+                columns: table => new
+                {
+                    Key = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Settings", x => x.Key);
                 });
 
             migrationBuilder.CreateTable(
@@ -50,7 +66,7 @@ namespace AnimeTracker.Api.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AniListId = table.Column<int>(type: "integer", nullable: false),
+                    AnimeCacheId = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Rating = table.Column<int>(type: "integer", nullable: true),
                     Review = table.Column<string>(type: "text", nullable: true),
@@ -66,10 +82,10 @@ namespace AnimeTracker.Api.Data.Migrations
                 {
                     table.PrimaryKey("PK_WatchEntries", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WatchEntries_AnimeCaches_AniListId",
-                        column: x => x.AniListId,
+                        name: "FK_WatchEntries_AnimeCaches_AnimeCacheId",
+                        column: x => x.AnimeCacheId,
                         principalTable: "AnimeCaches",
-                        principalColumn: "AniListId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -98,15 +114,21 @@ namespace AnimeTracker.Api.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AnimeCaches_Provider_ExternalId",
+                table: "AnimeCaches",
+                columns: new[] { "Provider", "ExternalId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tags_Name",
                 table: "Tags",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_WatchEntries_AniListId",
+                name: "IX_WatchEntries_AnimeCacheId",
                 table: "WatchEntries",
-                column: "AniListId");
+                column: "AnimeCacheId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WatchEntries_Status",
@@ -122,6 +144,9 @@ namespace AnimeTracker.Api.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Settings");
+
             migrationBuilder.DropTable(
                 name: "WatchEntryTag");
 

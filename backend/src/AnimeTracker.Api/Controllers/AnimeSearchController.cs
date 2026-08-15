@@ -1,15 +1,18 @@
 using AnimeTracker.Api.Models.Dtos;
-using AnimeTracker.Api.Services.AniList;
+using AnimeTracker.Api.Models.Entities;
+using AnimeTracker.Api.Services.Providers;
+using AnimeTracker.Api.Services.Settings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnimeTracker.Api.Controllers;
 
-/// <summary>Read-only proxy over the AniList API used to look anime up before adding it to your list.</summary>
+/// <summary>Read-only proxy over the currently active anime provider, used to look anime up before adding it to your list.</summary>
 [ApiController]
 [Route("api/anime")]
-public class AnimeSearchController(IAniListClient aniListClient) : ControllerBase
+public class AnimeSearchController(
+    IAnimeProviderRegistry providers, IActiveAnimeProviderService activeProvider) : ControllerBase
 {
-    /// <summary>Searches AniList for anime matching <paramref name="q"/>. Nothing is persisted here.</summary>
+    /// <summary>Searches the active provider for anime matching <paramref name="q"/>. Nothing is persisted here.</summary>
     [HttpGet("search")]
     public async Task<ActionResult<IReadOnlyList<AnimeDto>>> Search(
         [FromQuery] string q, [FromQuery] int page = 1, [FromQuery] int perPage = 20, CancellationToken cancellationToken = default)
@@ -17,15 +20,17 @@ public class AnimeSearchController(IAniListClient aniListClient) : ControllerBas
         if (string.IsNullOrWhiteSpace(q))
             return BadRequest("Query parameter 'q' is required.");
 
-        var results = await aniListClient.SearchAsync(q, page, perPage, cancellationToken);
-        return Ok(results.Select(r => r.ToDto()).ToList());
+        var provider = providers.Get(await activeProvider.GetActiveAsync(cancellationToken));
+        var results = await provider.SearchAsync(q, page, perPage, cancellationToken);
+        return Ok(results);
     }
 
-    /// <summary>Fetches full details for a single anime by its AniList id.</summary>
-    [HttpGet("{aniListId:int}")]
-    public async Task<ActionResult<AnimeDto>> GetById(int aniListId, CancellationToken cancellationToken)
+    /// <summary>Fetches full details for a single anime from a specific provider by its id there.</summary>
+    [HttpGet("{provider}/{externalId}")]
+    public async Task<ActionResult<AnimeDto>> GetById(
+        AnimeProvider provider, string externalId, CancellationToken cancellationToken)
     {
-        var media = await aniListClient.GetByIdAsync(aniListId, cancellationToken);
-        return media is null ? NotFound() : Ok(media.ToDto());
+        var result = await providers.Get(provider).GetByExternalIdAsync(externalId, cancellationToken);
+        return result is null ? NotFound() : Ok(result);
     }
 }

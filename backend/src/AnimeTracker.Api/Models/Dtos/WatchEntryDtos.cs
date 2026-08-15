@@ -18,7 +18,8 @@ public record WatchEntryDto(
     DateTimeOffset UpdatedAt);
 
 public record CreateWatchEntryRequest(
-    int AniListId,
+    AnimeProvider Provider,
+    string ExternalId,
     WatchStatus Status,
     int? Rating,
     string? Review,

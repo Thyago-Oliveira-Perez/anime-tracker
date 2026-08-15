@@ -31,7 +31,7 @@ public class WatchEntriesController(WatchEntryService watchEntryService) : Contr
     {
         var entry = await watchEntryService.CreateAsync(request, cancellationToken);
         if (entry is null)
-            return NotFound($"No anime found on AniList with id {request.AniListId}.");
+            return NotFound($"No anime found on {request.Provider} with id {request.ExternalId}.");
 
         return CreatedAtAction(nameof(GetById), new { id = entry.Id }, entry.ToDto());
     }

@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/AnimeTracker.Api/AnimeTracker.Api.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AnimeTracker.Api.Tests/AnimeTracker.Api.Tests.csproj" />
+  </Folder>
 </Solution>
