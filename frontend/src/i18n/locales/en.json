@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "search": "Search",
+    "myList": "My List",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "error": "Error",
+    "unknownError": "Unknown error"
+  },
+  "search": {
+    "title": "Search anime",
+    "placeholder": "Search by title…",
+    "button": "Search",
+    "searching": "Searching…",
+    "noResults": "No results.",
+    "addToList": "Add to list",
+    "prompt": "Search for an anime to get started."
+  },
+  "watchEntry": {
+    "status": {
+      "Planned": "Planned",
+      "Watching": "Watching",
+      "Completed": "Completed",
+      "Dropped": "Dropped",
+      "OnHold": "On hold"
+    },
+    "fields": {
+      "status": "Status",
+      "rating": "Rating (0-10)",
+      "review": "Review",
+      "episodesWatched": "Episodes watched",
+      "startedAt": "Started",
+      "finishedAt": "Finished",
+      "rewatchCount": "Rewatch count",
+      "favorite": "Favorite",
+      "tags": "Tags"
+    },
+    "form": {
+      "addTitle": "Add to your list",
+      "editTitle": "Edit entry",
+      "tagsPlaceholder": "comma-separated tags"
+    }
+  },
+  "myList": {
+    "title": "My list",
+    "empty": "Nothing here yet — add something from Search.",
+    "filters": {
+      "allStatuses": "All statuses",
+      "favoritesOnly": "Favorites only"
+    }
+  },
+  "settings": {
+    "animeProvider": {
+      "title": "Anime data source",
+      "description": "Choose which provider search and lookups use. Switch here if one goes down.",
+      "loadError": "Couldn't load the current setting:",
+      "saving": "Saving…",
+      "providers": {
+        "AniList": {
+          "label": "AniList",
+          "description": "GraphQL API, rich data, occasionally has outages."
+        },
+        "Jikan": {
+          "label": "Jikan (MyAnimeList)",
+          "description": "Unofficial MyAnimeList REST API, strict rate limits."
+        }
+      }
+    }
+  }
+}

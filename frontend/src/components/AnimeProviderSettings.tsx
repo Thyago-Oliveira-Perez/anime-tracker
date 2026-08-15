@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   type AnimeProvider,
   type AnimeProviderSetting,
@@ -6,19 +7,10 @@ import {
   setAnimeProviderSetting,
 } from "../lib/api";
 
-const PROVIDER_LABELS: Record<AnimeProvider, string> = {
-  AniList: "AniList",
-  Jikan: "Jikan (MyAnimeList)",
-};
-
-const PROVIDER_DESCRIPTIONS: Record<AnimeProvider, string> = {
-  AniList: "GraphQL API, rich data, occasionally has outages.",
-  Jikan: "Unofficial MyAnimeList REST API, strict rate limits.",
-};
-
 type Status = { kind: "idle" } | { kind: "error"; message: string } | { kind: "saving" };
 
 export default function AnimeProviderSettings() {
+  const { t } = useTranslation();
   const [setting, setSetting] = useState<AnimeProviderSetting | null>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
@@ -47,13 +39,13 @@ export default function AnimeProviderSettings() {
   if (status.kind === "error" && !setting) {
     return (
       <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-        Couldn&apos;t load the current setting: {status.message}
+        {t("settings.animeProvider.loadError")} {status.message}
       </p>
     );
   }
 
   if (!setting) {
-    return <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>;
+    return <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("common.loading")}</p>;
   }
 
   return (
@@ -79,10 +71,10 @@ export default function AnimeProviderSettings() {
               />
               <span className="flex flex-col">
                 <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {PROVIDER_LABELS[provider]}
+                  {t(`settings.animeProvider.providers.${provider}.label`)}
                 </span>
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {PROVIDER_DESCRIPTIONS[provider]}
+                  {t(`settings.animeProvider.providers.${provider}.description`)}
                 </span>
               </span>
             </label>
@@ -92,11 +84,9 @@ export default function AnimeProviderSettings() {
 
       <div className="min-h-5 text-sm">
         {status.kind === "saving" && (
-          <span className="text-zinc-500 dark:text-zinc-400">Saving…</span>
+          <span className="text-zinc-500 dark:text-zinc-400">{t("settings.animeProvider.saving")}</span>
         )}
-        {status.kind === "error" && (
-          <span className="text-red-600 dark:text-red-400">{status.message}</span>
-        )}
+        {status.kind === "error" && <span className="text-red-600 dark:text-red-400">{status.message}</span>}
       </div>
     </div>
   );

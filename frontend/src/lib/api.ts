@@ -1,5 +1,4 @@
-// Thin fetch wrapper for the AnimeTracker.Api backend. Kept deliberately small — this
-// frontend only has one feature so far (the anime-provider setting page).
+// Thin fetch wrapper for the AnimeTracker.Api backend.
 
 export type AnimeProvider = "AniList" | "Jikan";
 
@@ -7,6 +6,56 @@ export interface AnimeProviderSetting {
   active: AnimeProvider;
   available: AnimeProvider[];
 }
+
+export type WatchStatus = "Planned" | "Watching" | "Completed" | "Dropped" | "OnHold";
+
+export const WATCH_STATUSES: WatchStatus[] = ["Planned", "Watching", "Completed", "Dropped", "OnHold"];
+
+export interface AnimeDto {
+  provider: AnimeProvider;
+  externalId: string;
+  titleRomaji: string;
+  titleEnglish: string | null;
+  titleNative: string | null;
+  coverImageUrl: string | null;
+  format: string | null;
+  episodesTotal: number | null;
+  genres: string[];
+  description?: string | null;
+  averageScore?: number | null;
+}
+
+export interface WatchEntryDto {
+  id: number;
+  anime: AnimeDto;
+  status: WatchStatus;
+  rating: number | null;
+  review: string | null;
+  episodesWatched: number;
+  startedAt: string | null; // "yyyy-MM-dd"
+  finishedAt: string | null;
+  rewatchCount: number;
+  favorite: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWatchEntryRequest {
+  provider: AnimeProvider;
+  externalId: string;
+  status: WatchStatus;
+  rating: number | null;
+  review: string | null;
+  episodesWatched: number;
+  startedAt: string | null;
+  finishedAt: string | null;
+  rewatchCount: number;
+  favorite: boolean;
+  tags: string[] | null;
+}
+
+export type UpdateWatchEntryRequest = Omit<CreateWatchEntryRequest, "provider" | "externalId">;
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
@@ -36,3 +85,31 @@ export const setAnimeProviderSetting = (provider: AnimeProvider) =>
     method: "PUT",
     body: JSON.stringify({ provider }),
   });
+
+export const searchAnime = (query: string, page = 1, perPage = 20) =>
+  apiFetch<AnimeDto[]>(
+    `/api/anime/search?q=${encodeURIComponent(query)}&page=${page}&perPage=${perPage}`,
+  );
+
+export function listWatchEntries(params?: { status?: WatchStatus; favorite?: boolean }) {
+  const search = new URLSearchParams();
+  if (params?.status) search.set("status", params.status);
+  if (params?.favorite !== undefined) search.set("favorite", String(params.favorite));
+  const qs = search.toString();
+  return apiFetch<WatchEntryDto[]>(`/api/watch-entries${qs ? `?${qs}` : ""}`);
+}
+
+export const createWatchEntry = (request: CreateWatchEntryRequest) =>
+  apiFetch<WatchEntryDto>("/api/watch-entries", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+
+export const updateWatchEntry = (id: number, request: UpdateWatchEntryRequest) =>
+  apiFetch<WatchEntryDto>(`/api/watch-entries/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+
+export const deleteWatchEntry = (id: number) =>
+  apiFetch<void>(`/api/watch-entries/${id}`, { method: "DELETE" });

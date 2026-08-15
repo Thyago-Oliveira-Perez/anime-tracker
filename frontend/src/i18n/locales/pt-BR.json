@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "search": "Buscar",
+    "myList": "Minha Lista",
+    "settings": "Configurações"
+  },
+  "common": {
+    "loading": "Carregando…",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "error": "Erro",
+    "unknownError": "Erro desconhecido"
+  },
+  "search": {
+    "title": "Buscar anime",
+    "placeholder": "Buscar por título…",
+    "button": "Buscar",
+    "searching": "Buscando…",
+    "noResults": "Nenhum resultado.",
+    "addToList": "Adicionar à lista",
+    "prompt": "Busque um anime para começar."
+  },
+  "watchEntry": {
+    "status": {
+      "Planned": "Planejado",
+      "Watching": "Assistindo",
+      "Completed": "Completo",
+      "Dropped": "Abandonado",
+      "OnHold": "Em espera"
+    },
+    "fields": {
+      "status": "Status",
+      "rating": "Nota (0-10)",
+      "review": "Resenha",
+      "episodesWatched": "Episódios assistidos",
+      "startedAt": "Início",
+      "finishedAt": "Término",
+      "rewatchCount": "Nº de revisões",
+      "favorite": "Favorito",
+      "tags": "Tags"
+    },
+    "form": {
+      "addTitle": "Adicionar à sua lista",
+      "editTitle": "Editar registro",
+      "tagsPlaceholder": "tags separadas por vírgula"
+    }
+  },
+  "myList": {
+    "title": "Minha lista",
+    "empty": "Nada por aqui ainda — adicione algo pela Busca.",
+    "filters": {
+      "allStatuses": "Todos os status",
+      "favoritesOnly": "Somente favoritos"
+    }
+  },
+  "settings": {
+    "animeProvider": {
+      "title": "Fonte de dados de anime",
+      "description": "Escolha qual provedor a busca usa. Troque aqui se um deles cair.",
+      "loadError": "Não foi possível carregar a configuração atual:",
+      "saving": "Salvando…",
+      "providers": {
+        "AniList": {
+          "label": "AniList",
+          "description": "API GraphQL, dados ricos, com instabilidades ocasionais."
+        },
+        "Jikan": {
+          "label": "Jikan (MyAnimeList)",
+          "description": "API REST não-oficial do MyAnimeList, limite de requisições rígido."
+        }
+      }
+    }
+  }
+}

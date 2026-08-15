@@ -1,22 +1,23 @@
-import AnimeProviderSettings from "./components/AnimeProviderSettings";
+import { Navigate, Route, Routes } from "react-router";
+import LocaleLayout from "./routes/LocaleLayout";
+import SearchPage from "./routes/SearchPage";
+import MyListPage from "./routes/MyListPage";
+import SettingsPage from "./routes/SettingsPage";
+import { detectPreferredLocaleSegment } from "./i18n/locales";
 
-// The only page this frontend has so far: the anime-provider feature flag. The rest of the
-// app (search, watch log, i18n) is built separately — see project README.
 export default function App() {
-  return (
-    <div className="flex min-h-svh flex-1 items-center justify-center bg-zinc-50 px-4 py-16 dark:bg-black">
-      <main className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Anime data source
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Choose which provider search and lookups use. Switch here if one goes down.
-        </p>
+  const homeRedirect = `/${detectPreferredLocaleSegment()}/search`;
 
-        <div className="mt-6">
-          <AnimeProviderSettings />
-        </div>
-      </main>
-    </div>
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to={homeRedirect} replace />} />
+      <Route path="/:localeSegment" element={<LocaleLayout />}>
+        <Route index element={<Navigate to="search" replace />} />
+        <Route path="search" element={<SearchPage />} />
+        <Route path="my-list" element={<MyListPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to={homeRedirect} replace />} />
+    </Routes>
   );
 }

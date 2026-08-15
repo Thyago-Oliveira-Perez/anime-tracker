@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "search": "検索",
+    "myList": "マイリスト",
+    "settings": "設定"
+  },
+  "common": {
+    "loading": "読み込み中…",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "error": "エラー",
+    "unknownError": "不明なエラー"
+  },
+  "search": {
+    "title": "アニメを検索",
+    "placeholder": "タイトルで検索…",
+    "button": "検索",
+    "searching": "検索中…",
+    "noResults": "結果がありません。",
+    "addToList": "リストに追加",
+    "prompt": "アニメを検索してください。"
+  },
+  "watchEntry": {
+    "status": {
+      "Planned": "視聴予定",
+      "Watching": "視聴中",
+      "Completed": "視聴完了",
+      "Dropped": "視聴中止",
+      "OnHold": "保留中"
+    },
+    "fields": {
+      "status": "ステータス",
+      "rating": "評価 (0-10)",
+      "review": "感想",
+      "episodesWatched": "視聴済み話数",
+      "startedAt": "開始日",
+      "finishedAt": "終了日",
+      "rewatchCount": "再視聴回数",
+      "favorite": "お気に入り",
+      "tags": "タグ"
+    },
+    "form": {
+      "addTitle": "リストに追加",
+      "editTitle": "記録を編集",
+      "tagsPlaceholder": "カンマ区切りのタグ"
+    }
+  },
+  "myList": {
+    "title": "マイリスト",
+    "empty": "まだ何もありません。検索から追加してください。",
+    "filters": {
+      "allStatuses": "すべてのステータス",
+      "favoritesOnly": "お気に入りのみ"
+    }
+  },
+  "settings": {
+    "animeProvider": {
+      "title": "アニメデータソース",
+      "description": "検索と参照に使用するプロバイダーを選択してください。障害時はここで切り替えられます。",
+      "loadError": "現在の設定を読み込めませんでした:",
+      "saving": "保存中…",
+      "providers": {
+        "AniList": {
+          "label": "AniList",
+          "description": "GraphQL API。データが豊富だが、稀に障害が発生する。"
+        },
+        "Jikan": {
+          "label": "Jikan（MyAnimeList）",
+          "description": "非公式のMyAnimeList REST API。レート制限が厳しい。"
+        }
+      }
+    }
+  }
+}
