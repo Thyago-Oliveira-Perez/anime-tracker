@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-anime_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-anime_tracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anime_tracker}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-anime_tracker};
+        Username=${POSTGRES_USER:-anime_tracker};Password=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN:-http://localhost:3000}
+    ports:
+      - "8080:8080"
+
+  # frontend service will be added once the Next.js app is scaffolded (see README status).
+
+volumes:
+  postgres-data:

@@ -1,0 +1,23 @@
+# .NET
+backend/**/bin/
+backend/**/obj/
+*.user
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Env files
+.env
+.env.local
+*.env.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Docker
+postgres-data/
